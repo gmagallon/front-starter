@@ -12,7 +12,11 @@
   "license": "ISC",
   "devDependencies": {
     "cypress": "^12.7.0",
+    "cypress-cucumber-preprocessor": "^4.3.1",
     "tsconfig": "workspace:*",
     "typescript": "^4.5.3"
+  },
+  "cypress-cucumber-preprocessor": {
+    "nonGlobalStepDefinitions": true
   }
 }
