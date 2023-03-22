@@ -8,7 +8,7 @@ module.exports = defineConfig({
       return require("./cypress/plugins/index.js")(on, config);
     },
     specPattern: "**/*.feature",
-    supportFile: false,
+    supportFile: 'cypress/support/e2e.js',
     chromeWebSecurity: false,
   },
 });
