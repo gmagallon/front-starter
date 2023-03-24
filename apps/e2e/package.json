@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "cypress:open": "cypress open",
-    "test": "cypress run"
+    "the-actual-test": "docker-compose up -d; cypress run",
+    "test": "npm-run-all the-actual-test run-after-test-even-if-failed --continue-on-error",
+    "run-after-test-even-if-failed": "docker-compose down"
   },
   "keywords": [],
   "author": "",
