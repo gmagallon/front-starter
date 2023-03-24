@@ -5,17 +5,17 @@ Given("I visit {word}", (url) => {
 });
 
 When("I add 1", () => {
-  cy.getByTestId('add-count').click();
+  cy.getByTestId("add-count").click();
 });
 
 When("I remove 1", () => {
-  cy.getByTestId('remove-count').click();
+  cy.getByTestId("remove-count").click();
 });
 
 When("I reset", () => {
-  cy.getByTestId('reset-count').click();
+  cy.getByTestId("reset-count").click();
 });
 
 Then("the counter value is {int}", (value) => {
-  cy.getByTestId('count-value').contains(value);
+  cy.getByTestId("count-value").contains(value);
 });
