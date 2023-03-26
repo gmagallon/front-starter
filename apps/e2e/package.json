@@ -5,20 +5,32 @@
   "main": "index.js",
   "scripts": {
     "cypress:open": "cypress open",
-    "the-actual-test": "docker-compose up -d; cypress run",
-    "test": "npm-run-all the-actual-test run-after-test-even-if-failed --continue-on-error",
-    "run-after-test-even-if-failed": "docker-compose down"
+    "cypress:run": "cypress run",
+    "cypress:ci": "docker run -e BASE_URL=http://host.docker.internal:3000 -v $(pwd)/coverage:/my-starter/apps/e2e/coverage -v $(pwd)/.nyc_output:/my-starter/apps/e2e/.nyc_output --rm=true --add-host=host.docker.internal:host-gateway my-starter-e2e:latest",
+    "docker:build": "docker build -t my-starter -f ../../Dockerfile-web-instrumented ../..",
+    "docker:build:e2e": "docker build -t my-starter-e2e -f ../../Dockerfile-e2e ../..",
+    "docker:start": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "coverage:clean": "rm -rf .nyc_output; rm -rf coverage",
+    "docker:test": "run-s coverage:clean docker:start cypress:ci",
+    "test:docker": "npm-run-all docker:test docker:stop --continue-on-error"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@cypress/code-coverage": "^3.10.1",
     "cypress": "^12.7.0",
     "cypress-cucumber-preprocessor": "^4.3.1",
-    "tsconfig": "workspace:*",
     "typescript": "^4.5.3"
   },
   "cypress-cucumber-preprocessor": {
     "nonGlobalStepDefinitions": true
+  },
+  "nyc": {
+    "extension": [".js", ".jsx", ".ts", ".tsx"],
+    "include": ["../web/pages/**/*", "../../packages/ui/**/*"],
+    "exclude": ["../web/pages/api/__coverage__.js"],
+    "all": true
   }
 }

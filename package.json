@@ -10,10 +10,12 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "test:e2e": "turbo run test --filter=e2e",
     "format": "prettier --write \"**/*.{ts,tsx,md,js,json}\""
   },
   "devDependencies": {
     "eslint-config-custom": "workspace:*",
+    "nyc-config-tsx": "^0.1.0",
     "prettier": "latest",
     "turbo": "latest"
   },

@@ -1,9 +1,0 @@
-{
-  "extends": "tsconfig/base.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "types": ["cypress", "node"]
-  },
-  "include": ["."],
-  "exclude": ["dist", "build", "node_modules"]
-}
