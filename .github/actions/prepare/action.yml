@@ -1,0 +1,19 @@
+name: 'Prepare project'
+description: 'Checkout and install project'
+
+inputs:
+  node-version:
+    description: 'Node version'
+    required: true
+
+runs:
+  using: 'composite'
+
+  steps:
+      - name: Use Node.js ${{ inputs.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: 📥 Monorepo install
+        uses: ./.github/actions/pnpm-install

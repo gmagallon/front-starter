@@ -1,11 +1,17 @@
 const { defineConfig } = require("cypress");
 
 module.exports = defineConfig({
+  env: {
+    codeCoverage: {
+      url: '/api/__coverage__',
+    },
+  },
   e2e: {
-    // We've imported your old cypress plugins here.
-    // You may want to clean this up later by importing these.
+    baseUrl: process.env.BASE_URL || 'http://localhost:3000/',
     setupNodeEvents(on, config) {
-      return require("./cypress/plugins/index.js")(on, config);
+      require('@cypress/code-coverage/task')(on, config);
+      require("./cypress/plugins/index.js")(on, config);
+      return config;
     },
     specPattern: "**/*.feature",
     supportFile: "cypress/support/e2e.js",

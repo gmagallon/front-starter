@@ -1,6 +1,6 @@
 {
   "name": "my-starter",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -10,10 +10,15 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "test:e2e": "turbo run test --filter=e2e",
     "format": "prettier --write \"**/*.{ts,tsx,md,js,json}\""
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.5.1",
+    "@commitlint/config-conventional": "^17.4.4",
     "eslint-config-custom": "workspace:*",
+    "husky": "^8.0.3",
+    "nyc-config-tsx": "^0.1.0",
     "prettier": "latest",
     "turbo": "latest"
   },

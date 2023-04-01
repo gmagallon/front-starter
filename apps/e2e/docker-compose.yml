@@ -2,6 +2,6 @@ version: "3.9"
 
 services:
   frontend:
-    build: ../..
+    image: my-starter
     ports:
-      - "4004:3000"
+      - "3000:3000"

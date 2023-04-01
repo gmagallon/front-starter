@@ -1,0 +1,9 @@
+{
+  "extends": "nyc-config-tsx",
+  "extension": [".js", ".jsx", ".ts", ".tsx"],
+  "include": ["apps/web/pages/**/*", "packages/ui/**/*"],
+  "exclude": ["apps/web/pages/api/__coverage__.js"],
+  "all": true,
+  "sourceMap": true,
+  "instrument": true
+}

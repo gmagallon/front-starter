@@ -2,7 +2,7 @@ FROM node:alpine AS builder
 RUN apk add --no-cache libc6-compat
 RUN apk update
 # Set working directory
-WORKDIR /app
+WORKDIR /my-starter
 RUN yarn global add turbo
 COPY . .
 RUN turbo prune --scope=web --docker
@@ -11,43 +11,55 @@ RUN turbo prune --scope=web --docker
 FROM node:alpine AS installer
 RUN apk add --no-cache libc6-compat
 RUN apk update
-RUN npm install -g pnpm
+RUN npm install -g pnpm@7.17.0
 RUN npm install -g turbo
-WORKDIR /app
+WORKDIR /my-starter
  
 # First install the dependencies (as they change less often)
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder /my-starter/out/json/ .
+RUN true
+COPY --from=builder /my-starter/out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN true
+COPY --from=builder /my-starter/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
+RUN true
 COPY .npmrc .
+RUN true
+COPY .nycrc .
+RUN true
 
 RUN pnpm fetch
 ADD . ./
-RUN pnpm install
+RUN CYPRESS_INSTALL_BINARY=0 pnpm install  --filter=web...
 
 # Build the project
-COPY --from=builder /app/out/full/ .
+COPY --from=builder /my-starter/out/full/ .
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
+RUN npx nyc instrument apps/web apps/web --in-place
+RUN npx nyc instrument packages/ui /packages/ui --in-place
+
 RUN turbo run build --filter=web
  
 FROM node:alpine AS runner
-WORKDIR /app
+WORKDIR /my-starter
  
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 USER nextjs
  
-COPY --from=installer /app/apps/web/next.config.js .
-COPY --from=installer /app/apps/web/package.json .
- 
+COPY --from=installer /my-starter/apps/web/next.config.js .
+RUN true
+COPY --from=installer /my-starter/apps/web/package.json .
+RUN true
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
-COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=installer --chown=nextjs:nodejs /my-starter/apps/web/.next/standalone ./
+RUN true
+COPY --from=installer --chown=nextjs:nodejs /my-starter/apps/web/.next/static ./apps/web/.next/static
+RUN true
 #COPY --from=installer --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
  
 CMD node apps/web/server.js
