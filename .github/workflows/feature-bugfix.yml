@@ -85,14 +85,16 @@ jobs:
         run: |
           sudo chown -R $(id -u):$(id -g) apps/e2e/coverage
           ACTUAL_BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-          ACTUAL_LOG_MESSAGE=$(git log -n 1 --pretty=format:"%s [%H]" $hash)
-          cd apps/e2e/coverage
+          ACTUAL_LOG_MESSAGE=$(git log -n 1 --pretty=format:"%s [%h]" $hash)
+          cd apps/e2e
           git config --global init.defaultBranch main
           git config --global user.email "job@github.ci"
           git config --global user.name "github"
-          git init
+          git clone https://github.com/gmagallon/basic-auth.git out
+          cd out
           git checkout -B $ACTUAL_BRANCH_NAME
+          cp -a ../coverage/lcov-report/* ./public
           git add .
           git commit -m "$ACTUAL_LOG_MESSAGE"
-          git remote add origin https://${{ env.COVERAGE_GITHUB_TOKEN }}@github.com/${{ env.COVERAGE_REPOSITORY_GIT }}
-          git push -f origin $ACTUAL_BRANCH_NAME
+          git remote add coverage https://${{ env.COVERAGE_GITHUB_TOKEN }}@github.com/${{ env.COVERAGE_REPOSITORY_GIT }}
+          git push -f coverage $ACTUAL_BRANCH_NAME
