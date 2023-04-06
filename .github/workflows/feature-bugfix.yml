@@ -1,14 +1,13 @@
 name: Feature/BugFix
 
 on: [ push ]
+env:
+  COVERAGE_REPOSITORY_GIT: ${{ vars.COVERAGE_REPOSITORY_GIT }}
+  COVERAGE_GITHUB_TOKEN: ${{ secrets.COVERAGE_GITHUB_TOKEN }}
 
 jobs:
   cache-and-install:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x]
 
     steps:
     - name: Checkout
@@ -16,16 +15,12 @@ jobs:
     - name: Prepare
       uses: ./.github/actions/prepare
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: 16
         
   lint:
     needs: cache-and-install
 
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [16.x]
     
     steps:
       - name: Checkout
@@ -33,7 +28,7 @@ jobs:
       - name: Prepare
         uses: ./.github/actions/prepare
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 16
       - name: Lint
         run: pnpm lint
 
@@ -42,18 +37,14 @@ jobs:
 
     runs-on: ubuntu-latest
     
-    strategy:
-      matrix:
-        node-version: [16.x]
-    
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: pnpm/action-setup@v2.2.4
-      - name: Install dependencies
-        shell: bash
-        run: pnpm install
+      - name: Prepare
+        uses: ./.github/actions/prepare
+        with:
+          node-version: 16
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v2
@@ -62,15 +53,9 @@ jobs:
           command: pnpm --dir apps/e2e/ cypress:run
           start: pnpm --dir apps/web/ dev
           wait-on: 'http://localhost:3000'
-
-  e2e-tests-docker:
-    needs: cache-and-install
-
+      
+  e2e-docker-coverage:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [16.x]
     
     steps:
       - name: Checkout
@@ -79,7 +64,8 @@ jobs:
       - name: Install global dependencies
         id: global-dependencies
         shell: bash
-        run: npm i -g npm-run-all
+        run: |
+          npm i -g npm-run-all
 
       - name: Build docker image
         shell: bash
@@ -92,9 +78,23 @@ jobs:
       - name: Run Cypress tests
         shell: bash
         run: npm run --prefix apps/e2e/ docker:test
-            
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v3
-        with:
-          name: code-coverage-report
-          path: apps/e2e/coverage
+           
+      - name: Publish coverage
+        if: ${{ env.COVERAGE_GITHUB_TOKEN != '' && env.COVERAGE_REPOSITORY_GIT != '' }}
+        shell: bash
+        run: |
+          sudo chown -R $(id -u):$(id -g) apps/e2e/coverage
+          ACTUAL_BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+          ACTUAL_LOG_MESSAGE=$(git log -n 1 --pretty=format:"%s [%h]" $hash)
+          cd apps/e2e
+          git config --global init.defaultBranch main
+          git config --global user.email "job@github.ci"
+          git config --global user.name "github"
+          git clone https://github.com/gmagallon/basic-auth.git out
+          cd out
+          git checkout -B $ACTUAL_BRANCH_NAME
+          cp -a ../coverage/lcov-report/* ./public
+          git add .
+          git commit -m "$ACTUAL_LOG_MESSAGE"
+          git remote add coverage https://${{ env.COVERAGE_GITHUB_TOKEN }}@github.com/${{ env.COVERAGE_REPOSITORY_GIT }}
+          git push -f coverage $ACTUAL_BRANCH_NAME

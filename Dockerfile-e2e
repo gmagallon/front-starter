@@ -1,7 +1,8 @@
 FROM cypress/browsers:node16.14.2-slim-chrome103-ff102
 WORKDIR /my-starter
+
 RUN npm install -g pnpm@7.17.0
-RUN npm install -g turbo
 COPY . .
 RUN pnpm install
+
 ENTRYPOINT [ "pnpm", "--dir", "apps/e2e", "cypress:run" ]
